@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    volumes:
+      - ./texts.txt:/app/texts.txt
+      - ./slides:/app/slides
+      - ./out:/app/out
+      - ./cache:/app/cache
+    command: ["python", "main.py"]
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_ORGANIZATION=${OPENAI_ORGANIZATION}
