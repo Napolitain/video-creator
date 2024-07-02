@@ -10,10 +10,17 @@ if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
     argparser.add_argument("--lang", type=str, default="en")
     argparser.add_argument("--davinci", action="store_true", default=False)
+    argparser.add_argument("--openai-api-key", type=str, default=None)
+    argparser.add_argument("--openai-organization", type=str, default=None)
     args = argparser.parse_args()
 
     # Load OpenAI API keys from .env file
-    load_dotenv()
+    if args.openai_api_key is not None:
+        os.environ["OPENAI_API_KEY"] = args.openai_api_key
+    if args.openai_organization is not None:
+        os.environ["OPENAI_ORGANIZATION"] = args.openai_organization
+    if args.openai_api_key is None and args.openai_organization is None:
+        load_dotenv()
     # Create OpenAI client
     client = OpenAI()
     # Unset OpenAI API keys from environment variables for memory safety
@@ -44,6 +51,12 @@ if __name__ == "__main__":
     cache_dir = Path(__file__).parent / "cache"
     speech_dir = cache_dir / "audio"
     hash_file_path = speech_dir / f"hashes"
+    if not speech_dir.exists():
+        speech_dir.mkdir()
+    if not hash_file_path.exists():
+        hash_file_path.touch()
+    if not cache_dir.exists():
+        cache_dir.mkdir()
     hashes_cache = []
     audios = []
     with open(hash_file_path, "r") as f:
@@ -80,6 +93,8 @@ if __name__ == "__main__":
     # Load slides
     slides = []
     slides_dir = Path(__file__).parent / "slides"
+    if not slides_dir.exists():
+        slides_dir.mkdir()
     for slide in slides_dir.iterdir():
         # if file is .png, .jpg, or .jpeg
         if slide.suffix in [".png", ".jpg", ".jpeg"]:
@@ -94,6 +109,9 @@ if __name__ == "__main__":
 
     # Generate video from slides and audio (audio must be concatenated)
     output_dir = Path(__file__).parent / "out"
+    if not output_dir.exists():
+        # create output directory if it does not exist
+        output_dir.mkdir()
     zipped_audios = zip(slides, audios)
     clips = []
     for i, (slide, audio) in enumerate(zipped_audios):
@@ -106,4 +124,4 @@ if __name__ == "__main__":
         clip = clip.set_audio(audioclip)
         clips.append(clip)
     video = concatenate_videoclips(clips, method="compose")
-    video.write_videofile(str(output_dir / "output.mp4"), codec="libx264", fps=24)
+    video.write_videofile(str(output_dir / "output.webm"), codec="libvpx", fps=24)
