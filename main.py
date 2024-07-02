@@ -1,0 +1,109 @@
+import argparse
+import hashlib
+from pathlib import Path
+
+from dotenv import load_dotenv
+from moviepy.editor import *
+from openai import OpenAI
+
+if __name__ == "__main__":
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument("--lang", type=str, default="en")
+    argparser.add_argument("--davinci", action="store_true", default=False)
+    args = argparser.parse_args()
+
+    # Load OpenAI API keys from .env file
+    load_dotenv()
+    # Create OpenAI client
+    client = OpenAI()
+    # Unset OpenAI API keys from environment variables for memory safety
+    os.unsetenv("OPENAI_API_KEY")
+    os.unsetenv("OPENAI_ORGANIZATION")
+
+    # Texts are stored in texts.txt file.
+    # A part is defined by having text until \n-\n separator.
+    # Example :
+    # Text 1
+    # -
+    # Text 2
+    texts = []
+    hashes_current = []
+    with open("texts.txt", "r") as f:
+        text = ""
+        for line in f:
+            if line == "-\n":
+                texts.append(text)
+                hashes_current.append(hashlib.sha256(text.encode()).hexdigest())
+                text = ""
+            else:
+                text += line
+        texts.append(text)
+        hashes_current.append(hashlib.sha256(text.encode()).hexdigest())
+
+    # Generates audio as well as metadata to indicate the last time update.
+    cache_dir = Path(__file__).parent / "cache"
+    speech_dir = cache_dir / "audio"
+    hash_file_path = speech_dir / f"hashes"
+    hashes_cache = []
+    audios = []
+    with open(hash_file_path, "r") as f:
+        read = f.readlines()
+        for line in read:
+            # Remove newline characters
+            line = line.rstrip()
+            hashes_cache.append(line)
+
+    with open(hash_file_path, "w") as f:
+        for i, text in enumerate(texts):
+            # If the file already exists, and its metadata hash is identical to current metadata, skip
+            speech_file_path = speech_dir / f"{i}.mp3"
+            audios.append(speech_file_path)
+            if speech_file_path.exists():
+                try:
+                    if hashes_cache[i] == hashes_current[i]:
+                        f.write(hashes_current[i] + "\n")
+                        continue
+                except IndexError:
+                    pass
+
+            # Print filename to track progress
+            print(speech_file_path)
+            f.write(hashes_current[i] + "\n")
+            # Generate audio
+            response = client.audio.speech.create(
+                model="tts-1-hd",
+                voice="onyx",
+                input=text
+            )
+            response.stream_to_file(speech_file_path)
+
+    # Load slides
+    slides = []
+    slides_dir = Path(__file__).parent / "slides"
+    for slide in slides_dir.iterdir():
+        # if file is .png, .jpg, or .jpeg
+        if slide.suffix in [".png", ".jpg", ".jpeg"]:
+            slides.append(slide)
+
+    # Standardize the width and height of the slides by resizing them to the first slide's dimensions
+    # The aspect ratio can be also changed by adding black bars to the sides or top and bottom if needed
+    first_slide = slides[0]
+    first_slide_img = ImageClip(str(first_slide))
+    width, height = first_slide_img.size
+    aspect_ratio = width / height
+
+    # Generate video from slides and audio (audio must be concatenated)
+    output_dir = Path(__file__).parent / "out"
+    zipped_audios = zip(slides, audios)
+    clips = []
+    for i, (slide, audio) in enumerate(zipped_audios):
+        # Print filename to track progress
+        print(output_dir / f"{i}.mp4")
+        # Generate video
+        audioclip = AudioFileClip(str(audio))
+        clip = ImageClip(str(slide)).set_duration(audioclip.duration)
+        # Add black bars to the sides of the slide if the aspect ratio is different
+        clip = clip.set_audio(audioclip)
+        clips.append(clip)
+    video = concatenate_videoclips(clips, method="compose")
+    video.write_videofile(str(output_dir / "output.mp4"), codec="libx264", fps=24)
