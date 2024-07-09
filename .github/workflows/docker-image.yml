@@ -9,21 +9,18 @@ on:
 jobs:
 
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
 
     - name: Build the Docker image
-      run: docker build -t videocreator . --tag my-image-name:latest
+      run: docker build -t videocreator . --tag videocreator:latest
 
     - name: Push the Docker image to GitHub Container Registry (login)
       run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
     - name: Push the Docker image to GitHub Container Registry (tag)
-      run: docker tag my-image-name:latest ghcr.io/Napolitain/video-creator:latest
+      run: docker tag videocreator:latest ghcr.io/Napolitain/video-creator:latest
 
     - name: Push the Docker image to GitHub Container Registry (push)
-      run: docker push ghcr.io/video-creator:latest
-
+      run: docker push ghcr.io/Napolitain/video-creator:latest
