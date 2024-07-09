@@ -22,8 +22,8 @@ jobs:
       run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
     - name: Push the Docker image to GitHub Container Registry (tag)
-      run: docker tag my-image-name:latest ghcr.io/my-username/my-repo-name:latest
+      run: docker tag my-image-name:latest ghcr.io/Napolitain/video-creator:latest
 
     - name: Push the Docker image to GitHub Container Registry (push)
-      run: docker push ghcr.io/my-username/my-repo-name:latest
+      run: docker push ghcr.io/Napolitain/video-creator:latest
 
