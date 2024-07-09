@@ -25,5 +25,5 @@ jobs:
       run: docker tag my-image-name:latest ghcr.io/Napolitain/video-creator:latest
 
     - name: Push the Docker image to GitHub Container Registry (push)
-      run: docker push ghcr.io/Napolitain/video-creator:latest
+      run: docker push ghcr.io/video-creator:latest
 
