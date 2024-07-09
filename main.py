@@ -1,5 +1,6 @@
 import argparse
 import hashlib
+import logging
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -33,9 +34,13 @@ if __name__ == "__main__":
     # Text 1
     # -
     # Text 2
+    data_dir = Path(__file__).parent / "data"
+    if not data_dir.exists():
+        logging.fatal("Data directory does not exist. Run with volumes.")
+    text_file = data_dir / "texts.txt"
     texts = []
     hashes_current = []
-    with open("texts.txt", "r") as f:
+    with open(text_file, "r") as f:
         text = ""
         for line in f:
             if line == "-\n":
@@ -48,15 +53,15 @@ if __name__ == "__main__":
         hashes_current.append(hashlib.sha256(text.encode()).hexdigest())
 
     # Generates audio as well as metadata to indicate the last time update.
-    cache_dir = Path(__file__).parent / "cache"
+    cache_dir = data_dir / "cache"
     speech_dir = cache_dir / "audio"
     hash_file_path = speech_dir / f"hashes"
+    if not cache_dir.exists():
+        cache_dir.mkdir()
     if not speech_dir.exists():
         speech_dir.mkdir()
     if not hash_file_path.exists():
         hash_file_path.touch()
-    if not cache_dir.exists():
-        cache_dir.mkdir()
     hashes_cache = []
     audios = []
     with open(hash_file_path, "r") as f:
@@ -92,7 +97,7 @@ if __name__ == "__main__":
 
     # Load slides
     slides = []
-    slides_dir = Path(__file__).parent / "slides"
+    slides_dir = data_dir / "slides"
     if not slides_dir.exists():
         slides_dir.mkdir()
     for slide in slides_dir.iterdir():
@@ -108,7 +113,7 @@ if __name__ == "__main__":
     aspect_ratio = width / height
 
     # Generate video from slides and audio (audio must be concatenated)
-    output_dir = Path(__file__).parent / "out"
+    output_dir = data_dir / "out"
     if not output_dir.exists():
         # create output directory if it does not exist
         output_dir.mkdir()
@@ -124,4 +129,4 @@ if __name__ == "__main__":
         clip = clip.set_audio(audioclip)
         clips.append(clip)
     video = concatenate_videoclips(clips, method="compose")
-    video.write_videofile(str(output_dir / "output.webm"), codec="libvpx", fps=24)
+    video.write_videofile(str(output_dir / "output.mp4"), codec="libx264", fps=24)

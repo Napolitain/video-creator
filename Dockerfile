@@ -3,8 +3,10 @@ FROM python:slim
 WORKDIR /app
 
 # Install dependencies
-ADD requirements.txt /app/requirements.txt
-ADD main.py /app/main.py
+COPY requirements.txt requirements.txt
+COPY main.py main.py
+COPY data/texts.txt data/texts.txt
+COPY data/slides/ data/slides/
 
 RUN python -m ensurepip --upgrade
 RUN python -m pip install --upgrade setuptools
