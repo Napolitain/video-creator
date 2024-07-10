@@ -26,5 +26,5 @@ docker run -e OPENAI_API_KEY=$OPENAI_API_KEY --rm -v "${PWD}"/data:/app/data vid
 ### Usage
 
 ```bash
-docker run -e OPENAI_API_KEY=$OPENAI_API_KEY --rm -v "${PWD}"/data:/app/data ghcr.io/Napolitain/videocreator:latest
+docker run -e OPENAI_API_KEY=$OPENAI_API_KEY --rm -v "${PWD}"/data:/app/data ghcr.io/napolitain/videocreator:latest
 ```
