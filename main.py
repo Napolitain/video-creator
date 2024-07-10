@@ -1,6 +1,7 @@
 import argparse
 import hashlib
 import logging
+import shutil
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -34,9 +35,19 @@ if __name__ == "__main__":
     # Text 1
     # -
     # Text 2
-    data_dir = Path(__file__).parent / "data"
-    if not data_dir.exists():
+    data_docker_dir = Path(__file__).parent / "data_docker"
+    if not data_docker_dir.exists():
         logging.fatal("Data directory does not exist. Run with volumes.")
+    data_dir = Path(__file__).parent / "data"
+    # if data is empty, copy from data_docker recursively
+    if data_dir.exists() and not list(data_dir.iterdir()):
+        for item in data_docker_dir.iterdir():
+            if item.is_dir() and not (data_dir / item.name).exists():
+                shutil.copytree(item, data_dir / item.name)
+            else:
+                shutil.copy(item, data_dir)
+    if not (data_dir / "texts.txt").exists():
+        logging.fatal("Text file does not exist in data directory.")
     text_file = data_dir / "texts.txt"
     texts = []
     hashes_current = []
