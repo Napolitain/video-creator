@@ -17,8 +17,14 @@ It should also be compatible with Davinci Resolve.
 docker build -t videocreator .
 ```
 
-### Usage
+#### Run
 
 ```bash
 docker run -e OPENAI_API_KEY=$OPENAI_API_KEY --rm -v "${PWD}"/data:/app/data videocreator
+```
+
+### Usage
+
+```bash
+docker run -e OPENAI_API_KEY=$OPENAI_API_KEY --rm -v "${PWD}"/data:/app/data ghcr.io/Napolitain/videocreator:latest
 ```
