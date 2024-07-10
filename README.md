@@ -20,11 +20,13 @@ docker build -t videocreator .
 #### Run
 
 ```bash
+mkdir data
 docker run -e OPENAI_API_KEY=$OPENAI_API_KEY --rm -v "${PWD}"/data:/app/data videocreator
 ```
 
 ### Usage
 
 ```bash
+mkdir data
 docker run -e OPENAI_API_KEY=$OPENAI_API_KEY --rm -v "${PWD}"/data:/app/data ghcr.io/napolitain/videocreator:latest
 ```

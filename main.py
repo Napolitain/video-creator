@@ -43,9 +43,9 @@ if __name__ == "__main__":
     if data_dir.exists() and not list(data_dir.iterdir()):
         for item in data_docker_dir.iterdir():
             if item.is_dir() and not (data_dir / item.name).exists():
-                shutil.copytree(item, data_dir / item.name)
+                shutil.copytree(item, data_dir / item.name, symlinks=False)
             else:
-                shutil.copy(item, data_dir)
+                shutil.copy(item, data_dir, follow_symlinks=False)
     if not (data_dir / "texts.txt").exists():
         logging.fatal("Text file does not exist in data directory.")
     text_file = data_dir / "texts.txt"
