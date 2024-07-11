@@ -16,6 +16,7 @@ WORKDIR /app
 # Make sure you update Python version in path
 COPY --from=builder /home/nonroot/.local/lib/python3.12/site-packages /home/nonroot/.local/lib/python3.12/site-packages
 COPY main.py main.py
+COPY libs/ libs/
 COPY data/texts.txt data_docker/texts.txt
 COPY data/slides/ data_docker/slides/
 
