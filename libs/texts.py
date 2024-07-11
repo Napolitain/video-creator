@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import List
 
 from libs.ai import AI
+from libs.constants import root_dir
 from libs.text import Text
 
 
@@ -16,7 +17,7 @@ class Texts:
             self.langs_out = ["en"]
         else:
             self.langs_out = langs
-        self.data_dir = Path(__file__).parent / "data"
+        self.data_dir = root_dir / "data"
         self.texts: List[Text] = []
         self.client = AI()
 
@@ -33,6 +34,7 @@ class Texts:
                 text.load_text(True)
             else:
                 text.load_text(False)
+            self.texts.append(text)
 
     def generate_audios(self) -> dict[str, Path]:
         """
@@ -42,18 +44,18 @@ class Texts:
         """
         audios_lang_to_path = {}
         for text in self.texts:
-            current_hashes = text.generator_current_hashes()
+            current_hashes = Text.hashes
             cached_hashes = text.generator_audiocache_hashes()
-            skip = False
             # Check the hashes
-            for current_hash, cached_hash in zip(current_hashes, cached_hashes):
-                if current_hash == cached_hash:
-                    skip = True
-                    break
-            if skip:
-                continue
             audio_dir = self.data_dir / "cache" / text.lang / "audio"
-            for i, slide_text in enumerate(text.slides_text):
-                self.client.generate_audio(slide_text.text, audio_dir / f"{i}.mp3")
-            audios_lang_to_path[text.lang] = audio_dir
+            i = 0
+            with open(audio_dir / "hashes", "w") as f:
+                for current_hash, cached_hash in zip(current_hashes, cached_hashes):
+                    # add the audio path to the dictionary
+                    audios_lang_to_path.setdefault(text.lang, []).append(audio_dir / f"{i}.mp3")
+                    if current_hash != cached_hash:
+                        slide_text = text.slides_text[i]
+                        self.client.generate_audio(slide_text.text, audio_dir / f"{i}.mp3")
+                    i += 1
+                    f.write(f"{current_hash}\n")
         return audios_lang_to_path

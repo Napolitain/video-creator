@@ -1,7 +1,7 @@
-from pathlib import Path
 from typing import List
 
 from libs.ai import AI
+from libs.constants import root_dir
 from libs.slide_text import SlideText
 
 
@@ -9,11 +9,12 @@ class Text:
     """
     A text is a list of paragraphs that are displayed in a slide.
     """
+    hashes = []
 
     def __init__(self, lang: str):
         self.lang = lang
 
-        self.data_dir = Path(__file__).parent / "data"
+        self.data_dir = root_dir / "data"
         self.cache_dir = self.data_dir / "cache"
         if not self.cache_dir.exists():
             self.cache_dir.mkdir()
@@ -37,7 +38,6 @@ class Text:
         :return:
         """
         self.slides_text: List[SlideText] = []
-        hashes = []
         if is_input:
             text_file = self.data_dir / "texts.txt"
         else:
@@ -45,35 +45,36 @@ class Text:
         try:
             with open(text_file, "r") as f:
                 text = ""
+                i = 0
                 for line in f:
                     if line == "-\n":
                         slide_text = SlideText(text)
                         self.slides_text.append(slide_text)
-                        hashes.append(hash(slide_text))
                         text = ""
+                        i += 1
                     else:
                         text += line
                 slide_text = SlideText(text)
                 self.slides_text.append(slide_text)
-                hashes.append(hash(slide_text))
+            if is_input:
+                Text.hashes = self.generator_current_hashes()
         except FileNotFoundError:
             if is_input:
                 # Input text file should always exist!
                 raise FileNotFoundError("Text file does not exist in data directory.")
             else:
                 # Create tmp text file to get original text and its hashes
-                tmp = Text()
+                tmp = Text("en")
                 tmp.load_text(True)
                 client = AI()
                 # Iterate over each text block and translate it
-                for text, hash_current in zip(tmp.slides_text, tmp.hashes):
-                    translated_text, hash_current = client.translate(text, self.lang)
+                for slide_text in tmp.slides_text:
+                    translated_text, hash_current = client.translate(slide_text.text, self.lang)
                     self.slides_text.append(SlideText(translated_text))
-                    hashes.append(hash_current)
                 # save text to text_dir
-                self.save_text_file(self.slides_text, hashes)
+                self.save_text_file(self.slides_text)
 
-    def save_text_file(self, slides_text: List[SlideText], hashes: List[str]):
+    def save_text_file(self, slides_text: List[SlideText]):
         """
         Save texts to a file like texts.txt, and save hashes to a file like hashes.
         :param slides_text: list of texts to save
@@ -84,30 +85,39 @@ class Text:
         hash_file = self.text_dir / "hashes"
         with open(text_file, "w") as f:
             with open(hash_file, "w") as g:
-                for t, h in zip(slides_text, hashes):
+                i = 0
+                for t, h in zip(slides_text, Text.hashes):
+                    if i == len(slides_text) - 1:
+                        f.write(t.text)
+                        g.write(h)
                     f.write(t.text + "\n-\n")
                     g.write(h + "\n")
+                    i += 1
 
-    def generator_current_hashes(self):
+    def generator_current_hashes(self) -> List[str]:
         """
         Generate hashes for each slide text.
         :return: list of hashes
         """
-        return (hash(slide_text) for slide_text in self.slides_text)
+        return [slide_text.hash() for slide_text in self.slides_text]
 
-    def generator_textcache_hashes(self):
+    def generator_textcache_hashes(self) -> List[str]:
         """
         Generate hashes for each slide text in cache.
         :return: list of hashes
         """
         hash_file = self.text_dir / "hashes"
-        return (line.rstrip() for line in open(hash_file, "r"))
+        if not hash_file.exists():
+            return ["" for _ in self.slides_text]
+        return [line.rstrip() for line in open(hash_file, "r")]
 
-    def generator_audiocache_hashes(self):
+    def generator_audiocache_hashes(self) -> List[str]:
         """
         Generate hashes for each audio file in cache.
         :return: list of hashes
         """
         hash_file = self.audio_dir / "hashes"
-        return (line.rstrip() for line in open(hash_file, "r"))
+        if not hash_file.exists():
+            return ["" for _ in self.slides_text]
+        return [line.rstrip() for line in open(hash_file, "r")]
 

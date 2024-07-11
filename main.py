@@ -1,7 +1,6 @@
 import argparse
 import logging
 import shutil
-from pathlib import Path
 
 from dotenv import load_dotenv
 from moviepy.editor import *
@@ -13,14 +12,14 @@ from libs.texts import Texts
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
     # Language of the text input (default: English, options are languages codes and "ai")
-    argparser.add_argument("--lang", type=str, default="en", choices=langs.keys())
+    argparser.add_argument("--lang", type=str, default="en", choices=langs.keys(), required=False)
     # Language of the text output (default: English, options can be multiple selections)
-    argparser.add_argument("--langs-out", default=["en"], nargs="+", choices=langs.keys() - {"ai"})
+    argparser.add_argument("--langs-out", default=["en"], nargs="+", choices=langs.keys() - {"ai"}, required=False)
     # Create a Davinci project
-    argparser.add_argument("--davinci", action="store_true", default=False)
+    argparser.add_argument("--davinci", action="store_true", default=False, required=False)
     # OpenAI API key and organization
-    argparser.add_argument("--openai-api-key", type=str, default=None)
-    argparser.add_argument("--openai-organization", type=str, default=None)
+    argparser.add_argument("--openai-api-key", type=str, default=None, required=False)
+    argparser.add_argument("--openai-organization", type=str, default=None, required=False)
     args = argparser.parse_args()
 
     # Load OpenAI API keys from .env file
@@ -51,6 +50,13 @@ if __name__ == "__main__":
     if not (data_dir / "texts.txt").exists():
         logging.fatal("Text file does not exist in data directory.")
 
+    # Input language must be in the output languages, at first position
+    if args.lang not in args.langs_out:
+        args.langs_out.insert(0, args.lang)
+    else:
+        args.langs_out.remove(args.lang)
+        args.langs_out.insert(0, args.lang)
+
     # Generate texts and audios
     texts = Texts(lang=args.lang, langs=args.langs_out)
     texts.generate_texts()  # Translate texts if needed
@@ -79,7 +85,7 @@ if __name__ == "__main__":
         if not output_dir.exists():
             # create output directory if it does not exist
             output_dir.mkdir()
-        zipped_audios = zip(slides, audios)
+        zipped_audios = zip(slides, audios[lang_out])
         clips = []
         for i, (slide, audio) in enumerate(zipped_audios):
             # Print filename to track progress

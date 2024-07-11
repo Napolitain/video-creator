@@ -31,6 +31,7 @@ class AI:
     def translate(self, text: str, lang: str) -> tuple[str, str]:
         """
         Ask chatgpt-3.5 turbo to translate text to lang
+        TODO: replace by Google Translate API (costs)
         :param text: text to translate
         :param lang: language to translate to
         :return: translated text and hash of the text to avoid translating the same text
@@ -40,8 +41,8 @@ class AI:
             messages=[{"role": "user", "content": f"Translate '{text}' to {lang}."}],
             stream=False,
         )
-        print(f"Translated to {lang}")
-        return stream.choices[0].message["content"], hashlib.sha256(text.encode()).hexdigest()
+        print(f"AI: Translated to {lang}")
+        return stream.choices[0].message.content, hashlib.sha256(text.encode()).hexdigest()
 
     def generate_audio(self, text: str, speech_file_path: Path):
         """
@@ -56,5 +57,5 @@ class AI:
             input=text
         )
         response.stream_to_file(speech_file_path)
-        print(f"Generated audio for {speech_file_path.name}")
+        print(f"AI: Generated audio for {speech_file_path.name}")
         return hashlib.sha256(text.encode()).hexdigest()
