@@ -69,7 +69,7 @@ if __name__ == "__main__":
         slides_dir.mkdir()
     for slide in slides_dir.iterdir():
         # if file is .png, .jpg, or .jpeg
-        if slide.suffix in [".png", ".jpg", ".jpeg"]:
+        if slide.suffix.lower() in [".png", ".jpg", ".jpeg"]:
             slides.append(slide)
 
     # Standardize the width and height of the slides by resizing them to the first slide's dimensions
@@ -97,4 +97,8 @@ if __name__ == "__main__":
             clip = clip.set_audio(audioclip)
             clips.append(clip)
         video = concatenate_videoclips(clips, method="compose")
-        video.write_videofile(str(output_dir / f"output-{lang_out}.mp4"), codec="libx264", fps=30)
+        video.write_videofile(
+            str(output_dir / f"output-{lang_out}.mp4"),
+            codec="png",
+            fps=30,
+        )
