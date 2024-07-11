@@ -43,7 +43,7 @@ class Text:
         else:
             text_file = self.text_dir / "texts.txt"
         try:
-            with open(text_file, "r") as f:
+            with open(text_file, "r", encoding="utf-8") as f:
                 text = ""
                 i = 0
                 for line in f:
@@ -83,8 +83,8 @@ class Text:
         """
         text_file = self.text_dir / "texts.txt"
         hash_file = self.text_dir / "hashes"
-        with open(text_file, "w") as f:
-            with open(hash_file, "w") as g:
+        with open(text_file, "w", encoding="utf-8") as f:
+            with open(hash_file, "w", encoding="utf-8") as g:
                 i = 0
                 for t, h in zip(slides_text, Text.hashes):
                     if i == len(slides_text) - 1:

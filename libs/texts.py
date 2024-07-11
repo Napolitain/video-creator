@@ -49,7 +49,7 @@ class Texts:
             # Check the hashes
             audio_dir = self.data_dir / "cache" / text.lang / "audio"
             i = 0
-            with open(audio_dir / "hashes", "w") as f:
+            with open(audio_dir / "hashes", "w", encoding="utf-8") as f:
                 for current_hash, cached_hash in zip(current_hashes, cached_hashes):
                     # add the audio path to the dictionary
                     audios_lang_to_path.setdefault(text.lang, []).append(audio_dir / f"{i}.mp3")
