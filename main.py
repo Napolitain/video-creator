@@ -81,10 +81,26 @@ if __name__ == "__main__":
 
     # Generate video from slides and audio (audio must be concatenated)
     for lang_out in args.langs_out:
+        # Get hashes from original and compare to out/hashes-lang_out. If they are the same, skip.
+        try:
+            hashes_original = texts.texts[0].generator_current_hashes()
+            skip = True
+            with open(data_dir / "out" / f"hashes-{lang_out}", "r", encoding="utf-8") as f:
+                i = 0
+                for line in f:
+                    if hashes_original[i] != line.strip():
+                        skip = False
+                        break
+                    i += 1
+        except FileNotFoundError:
+            skip = False
+        if skip:
+            continue
+        # Create output directory
         output_dir = data_dir / "out"
         if not output_dir.exists():
-            # create output directory if it does not exist
             output_dir.mkdir()
+        # Create video
         zipped_audios = zip(slides, audios[lang_out])
         clips = []
         for i, (slide, audio) in enumerate(zipped_audios):
@@ -102,3 +118,10 @@ if __name__ == "__main__":
             codec="png",
             fps=30,
         )
+        # Save hashes
+        with open(data_dir / "out" / f"hashes-{lang_out}", "w", encoding="utf-8") as f:
+            for i, h in enumerate(hashes_original):
+                if i == len(hashes_original) - 1:
+                    f.write(f"{h}")
+                else:
+                    f.write(f"{h}\n")

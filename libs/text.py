@@ -90,9 +90,10 @@ class Text:
                     if i == len(slides_text) - 1:
                         f.write(t.text)
                         g.write(h)
-                    f.write(t.text + "\n-\n")
-                    g.write(h + "\n")
-                    i += 1
+                    else:
+                        f.write(t.text + "\n-\n")
+                        g.write(h + "\n")
+                        i += 1
 
     def generator_current_hashes(self) -> List[str]:
         """
