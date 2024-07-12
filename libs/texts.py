@@ -44,10 +44,10 @@ class Texts:
         """
         audios_lang_to_path = {}
         for text in self.texts:
-            current_hashes = Text.hashes
-            cached_hashes = text.generator_audiocache_hashes()
-            # Check the hashes
             audio_dir = self.data_dir / "cache" / text.lang / "audio"
+            current_hashes = Text.hashes
+            cached_hashes = text.generator_cache_hashes(audio_dir)
+            # Check the hashes
             i = 0
             with open(audio_dir / "hashes", "w", encoding="utf-8") as f:
                 for current_hash, cached_hash in zip(current_hashes, cached_hashes):

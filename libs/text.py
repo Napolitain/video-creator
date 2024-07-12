@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 
 from libs.ai import AI
@@ -102,23 +103,15 @@ class Text:
         """
         return [slide_text.hash() for slide_text in self.slides_text]
 
-    def generator_textcache_hashes(self) -> List[str]:
+    def generator_cache_hashes(self, directory: Path, lang: str = None) -> List[str]:
         """
-        Generate hashes for each slide text in cache.
+        Generate hashes for each text in cache.
+        :param directory: directory to read hashes from
         :return: list of hashes
         """
-        hash_file = self.text_dir / "hashes"
+        if lang is not None:
+            directory = directory / f"-{lang}"
+        hash_file = directory / "hashes"
         if not hash_file.exists():
             return ["" for _ in self.slides_text]
         return [line.rstrip() for line in open(hash_file, "r")]
-
-    def generator_audiocache_hashes(self) -> List[str]:
-        """
-        Generate hashes for each audio file in cache.
-        :return: list of hashes
-        """
-        hash_file = self.audio_dir / "hashes"
-        if not hash_file.exists():
-            return ["" for _ in self.slides_text]
-        return [line.rstrip() for line in open(hash_file, "r")]
-
