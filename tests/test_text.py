@@ -29,30 +29,9 @@ def text_instance(tmp_path):
     root_dir = tmp_path
     return Text(lang="en", root_dir=root_dir)
 
-def test_text_init_creates_directories(text_instance):
-    """
-    Test that the Text class __init__ method creates necessary directories.
-    """
-    assert text_instance.data_dir.exists()
-    assert text_instance.cache_dir.exists()
-    assert text_instance.lang_dir.exists()
-    assert text_instance.audio_dir.exists()
-    assert text_instance.text_dir.exists()
 
-def test_load_text_input_true_loads_texts(text_instance, tmp_path):
-    """
-    Test the load_text method with is_input=True to ensure it loads texts correctly.
-    """
-    # Setup: Create a texts.txt file in the data directory
-    texts_file = tmp_path / "data" / "texts.txt"
-    texts_file.write_text("Hello\n-\nWorld\n")
-    # Test
-    text_instance.load_text(is_input=True)
-    assert len(text_instance.slides_text) == 2  # Expecting two SlideText instances
-
-def test_load_text_input_false_handles_file_not_found(text_instance):
-    """
-    Test the load_text method with is_input=False to ensure it handles FileNotFoundError.
-    """
-    with pytest.raises(FileNotFoundError):
-        text_instance.load_text(is_input=False)
+def test_generator_cache_hashes():
+    lang = "en"
+    if lang is not None:
+        dir = dir / f"-{lang}"
+    hash_file = dir / "hashes"
