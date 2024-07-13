@@ -82,8 +82,8 @@ if __name__ == "__main__":
     # Generate video from slides and audio (audio must be concatenated)
     for lang_out in args.langs_out:
         # Get hashes from original and compare to out/hashes-lang_out. If they are the same, skip.
+        hashes_original = texts.texts[0].generator_current_hashes()
         try:
-            hashes_original = texts.texts[0].generator_current_hashes()
             skip = True
             with open(data_dir / "out" / f"hashes-{lang_out}", "r", encoding="utf-8") as f:
                 i = 0
