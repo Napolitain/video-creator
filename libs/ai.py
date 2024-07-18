@@ -31,13 +31,12 @@ class AI:
     def translate(self, text: str, lang: str) -> tuple[str, str]:
         """
         Ask chatgpt-3.5 turbo to translate text to lang
-        TODO: replace by Google Translate API (costs)
         :param text: text to translate
         :param lang: language to translate to
         :return: translated text and hash of the text to avoid translating the same text
         """
         stream = self.client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[{"role": "user", "content": f"Translate '{text}' to {lang}."}],
             stream=False,
         )
